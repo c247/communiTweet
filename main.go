@@ -12,6 +12,40 @@ const (
 	apiEndpoint = "https://api.openai.com/v1/chat/completions"
 )
 
+type DAG struct {
+    Adj map[string]map[string]struct{}
+}
+
+func NewDAG() *DAG {
+    return &DAG{
+        Adj: make(map[string]map[string]struct{}),
+    }
+}
+
+func (g *DAG) AddEdge(from, to string) {
+    if _, exists := g.Adj[from]; !exists {
+        g.Adj[from] = make(map[string]struct{})
+    }
+
+    g.Adj[from][to] = struct{}{}
+}
+
+func CreateDAGFromPairs(pairs [][]string) (*DAG, error) {
+    dag := NewDAG()
+
+    for _, pair := range pairs {
+        if len(pair) != 2 {
+            return nil, fmt.Errorf("each pair should have exactly two elements")
+        }
+
+        fromUser, toUser := pair[0], pair[1]
+        dag.AddEdge(fromUser, toUser)
+    }
+
+    return dag, nil
+}
+
+
 func getOpenAIResponse(apiKey, question string) (string, error) {
 	client := resty.New()
 
